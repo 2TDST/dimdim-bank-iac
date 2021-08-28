@@ -1,24 +1,24 @@
 ## Resourcegroup information
-resource "azurerm_resource_group" "rg-slashicorp-azure-tf" {
-  name     = "rg-slashicorp-azure-tf"
+resource "azurerm_resource_group" "rg-dimdim-azure-tf" {
+  name     = "rg-dimdim-azure-tf"
   location = "northcentralus"
 }
 
 # Upgrades to Standard Ddos protection
-resource "azurerm_network_ddos_protection_plan" "rg-slashicorp-azure-tf" {
+resource "azurerm_network_ddos_protection_plan" "rg-dimdim-azure-tf" {
   name                = "ddospplan1"
-  location            = azurerm_resource_group.rg-slashicorp-azure-tf.location
-  resource_group_name = azurerm_resource_group.rg-slashicorp-azure-tf.name
+  location            = azurerm_resource_group.rg-dimdim-azure-tf.location
+  resource_group_name = azurerm_resource_group.rg-dimdim-azure-tf.name
 }
 
 #Creates VNet and Subnet
 module "VNet-aks" {
   source                  = "./modules/azure-vnet"
-  location                = azurerm_resource_group.rg-slashicorp-azure-tf.location
-  resource_group_name     = azurerm_resource_group.rg-slashicorp-azure-tf.name
+  location                = azurerm_resource_group.rg-dimdim-azure-tf.location
+  resource_group_name     = azurerm_resource_group.rg-dimdim-azure-tf.name
   vnet_name               = "AKSVNet"
   address_space           = ["10.0.0.0/16"]
-  ddos_protection_plan_id = azurerm_network_ddos_protection_plan.rg-slashicorp-azure-tf.id
+  ddos_protection_plan_id = azurerm_network_ddos_protection_plan.rg-dimdim-azure-tf.id
   subnet_name             = "AKSsubnet"
   address_prefix          = "10.0.0.0/22"
   environment             = "prod"
@@ -27,9 +27,9 @@ module "VNet-aks" {
 # Create AKS
 module "aks-1" {
   source                       = "./modules/aks"
-  aks_name                     = "aksrg-slashicorp-azure-tfapril"
-  location                     = azurerm_resource_group.rg-slashicorp-azure-tf.location
-  resource_group_name          = azurerm_resource_group.rg-slashicorp-azure-tf.name
+  aks_name                     = "aksrg-dimdim-azure-tfapril"
+  location                     = azurerm_resource_group.rg-dimdim-azure-tf.location
+  resource_group_name          = azurerm_resource_group.rg-dimdim-azure-tf.name
   kubernetes_version           = "1.20.7"
   network_plugin               = "azure"
   network_policy               = "azure"
@@ -49,11 +49,11 @@ module "aks-1" {
 #Creates VNet and Subnet
 module "VNet-vm" {
   source                  = "./modules/azure-vnet"
-  location                = azurerm_resource_group.rg-slashicorp-azure-tf.location
-  resource_group_name     = azurerm_resource_group.rg-slashicorp-azure-tf.name
+  location                = azurerm_resource_group.rg-dimdim-azure-tf.location
+  resource_group_name     = azurerm_resource_group.rg-dimdim-azure-tf.name
   vnet_name               = "dimdim-vmvnet"
   address_space           = ["10.1.0.0/16"]
-  ddos_protection_plan_id = azurerm_network_ddos_protection_plan.rg-slashicorp-azure-tf.id
+  ddos_protection_plan_id = azurerm_network_ddos_protection_plan.rg-dimdim-azure-tf.id
   subnet_name             = "dimdim-vmsubnet"
   address_prefix          = "10.1.0.0/24"
   environment             = "prod"
@@ -62,8 +62,8 @@ module "VNet-vm" {
 # Create the Debian
 resource "azurerm_network_interface" "vm" {
   name                = "vm-nic"
-  location            = azurerm_resource_group.rg-slashicorp-azure-tf.location
-  resource_group_name = azurerm_resource_group.rg-slashicorp-azure-tf.name
+  location            = azurerm_resource_group.rg-dimdim-azure-tf.location
+  resource_group_name = azurerm_resource_group.rg-dimdim-azure-tf.name
 
   ip_configuration {
     name                          = "internal"
@@ -74,8 +74,8 @@ resource "azurerm_network_interface" "vm" {
 
 resource "azurerm_linux_virtual_machine" "vm" {
   name                            = "debianvm"
-  resource_group_name             = azurerm_resource_group.rg-slashicorp-azure-tf.name
-  location                        = azurerm_resource_group.rg-slashicorp-azure-tf.location
+  resource_group_name             = azurerm_resource_group.rg-dimdim-azure-tf.name
+  location                        = azurerm_resource_group.rg-dimdim-azure-tf.location
   size                            = "Standard_D2S_v3"
   admin_username                  = "adminuser"
   admin_password                  = "3Cl!ps32022"
@@ -105,7 +105,7 @@ resource "azurerm_linux_virtual_machine" "vm" {
 
 resource "azurerm_subnet" "bastion" {
   name                 = "AzureBastionSubnet"
-  resource_group_name  = azurerm_resource_group.rg-slashicorp-azure-tf.name
+  resource_group_name  = azurerm_resource_group.rg-dimdim-azure-tf.name
   virtual_network_name = module.VNet-vm.virtual_network_name
   address_prefix       = "10.1.1.0/27"
 }
@@ -113,16 +113,16 @@ resource "azurerm_subnet" "bastion" {
 
 resource "azurerm_public_ip" "bastion" {
   name                = "vmpip"
-  location            = azurerm_resource_group.rg-slashicorp-azure-tf.location
-  resource_group_name = azurerm_resource_group.rg-slashicorp-azure-tf.name
+  location            = azurerm_resource_group.rg-dimdim-azure-tf.location
+  resource_group_name = azurerm_resource_group.rg-dimdim-azure-tf.name
   allocation_method   = "Static"
   sku                 = "Standard"
 }
 
 resource "azurerm_bastion_host" "bastion" {
   name                = "debionbastion"
-  location            = azurerm_resource_group.rg-slashicorp-azure-tf.location
-  resource_group_name = azurerm_resource_group.rg-slashicorp-azure-tf.name
+  location            = azurerm_resource_group.rg-dimdim-azure-tf.location
+  resource_group_name = azurerm_resource_group.rg-dimdim-azure-tf.name
 
   ip_configuration {
     name                 = "configuration"
@@ -134,14 +134,14 @@ resource "azurerm_bastion_host" "bastion" {
 # Peer the VNets
 resource "azurerm_virtual_network_peering" "aks" {
   name                      = "akstovm"
-  resource_group_name       = azurerm_resource_group.rg-slashicorp-azure-tf.name
+  resource_group_name       = azurerm_resource_group.rg-dimdim-azure-tf.name
   virtual_network_name      = module.VNet-aks.virtual_network_name
   remote_virtual_network_id = module.VNet-vm.virtual_network_id
 }
 
 resource "azurerm_virtual_network_peering" "vm" {
   name                      = "vmtoaks"
-  resource_group_name       = azurerm_resource_group.rg-slashicorp-azure-tf.name
+  resource_group_name       = azurerm_resource_group.rg-dimdim-azure-tf.name
   virtual_network_name      = module.VNet-vm.virtual_network_name
   remote_virtual_network_id = module.VNet-aks.virtual_network_id
 }
