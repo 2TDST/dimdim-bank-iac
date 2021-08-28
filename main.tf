@@ -16,10 +16,10 @@ module "VNet-aks" {
   source                  = "./modules/azure-vnet"
   location                = azurerm_resource_group.rg-dimdim-azure-tf.location
   resource_group_name     = azurerm_resource_group.rg-dimdim-azure-tf.name
-  vnet_name               = "AKSVNet"
+  vnet_name               = "rg-dimdim-azure-net"
   address_space           = ["10.0.0.0/16"]
   ddos_protection_plan_id = azurerm_network_ddos_protection_plan.rg-dimdim-azure-tf.id
-  subnet_name             = "AKSsubnet"
+  subnet_name             = "rg-dimdim-azure-subnet"
   address_prefix          = "10.0.0.0/22"
   environment             = "prod"
 }
@@ -27,7 +27,7 @@ module "VNet-aks" {
 # Create AKS
 module "aks-1" {
   source                       = "./modules/aks"
-  aks_name                     = "aksrg-dimdim-azure-tfapril"
+  aks_name                     = "aks-dimdim-prd"
   location                     = azurerm_resource_group.rg-dimdim-azure-tf.location
   resource_group_name          = azurerm_resource_group.rg-dimdim-azure-tf.name
   kubernetes_version           = "1.20.7"
@@ -39,8 +39,8 @@ module "aks-1" {
   default_node_pool_max_pods   = 50
   default_node_pool_vm_size    = "Standard_D2s_v3"
   default_node_pool_min_count  = 1
-  default_node_pool_max_count  = 10
-  default_node_pool_node_count = 3
+  default_node_pool_max_count  = 1
+  default_node_pool_node_count = 1
 }
 
 
